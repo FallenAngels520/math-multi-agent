@@ -1,0 +1,29 @@
+{
+  "name": "mcp-geogebra",
+  "version": "1.0.0",
+  "description": "MCP server for GeoGebra computation and drawing capabilities",
+  "main": "src/index.js",
+  "type": "module",
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "node src/index.js"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.0.0",
+    "node-fetch": "^2.6.7",
+    "base64-js": "^1.5.1"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0"
+  },
+  "keywords": [
+    "mcp",
+    "geogebra",
+    "math",
+    "computation",
+    "drawing",
+    "geometry"
+  ],
+  "author": "Your Name",
+  "license": "MIT"
+}
