@@ -2,7 +2,7 @@ import os
 from pydantic import BaseModel, Field
 from typing import Optional, List, Literal, Any 
 from enum import Enum
-from langgraph.graph import RunnableConfig
+from typing import Any, Dict
 
 class SearchAPI(Enum):
     """Enumeration of available search API providers."""
@@ -72,11 +72,11 @@ class Configuration(BaseModel):
 
     @classmethod
     def from_runnable_config(
-        cls, config: Optional[RunnableConfig] = None
+        cls, config: Optional[Dict[str, Any]] = None
     ) -> "Configuration":
-        """Create a Configuration instance from a RunnableConfig."""
+        """Create a Configuration instance from a config dictionary."""
         configurable = (
-            config["configurable"] if config and "configurable" in config else {}
+            config.get("configurable", {}) if config else {}
         )
 
         # Get raw values from environment or config
