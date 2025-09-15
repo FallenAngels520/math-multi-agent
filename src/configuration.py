@@ -1,5 +1,8 @@
 import os
-from pydantic import BaseModel, Field, Optional, List, Literal, Enum
+from pydantic import BaseModel, Field
+from typing import Optional, List, Literal, Any 
+from enum import Enum
+from langgraph.graph import RunnableConfig
 
 class SearchAPI(Enum):
     """Enumeration of available search API providers."""
@@ -46,3 +49,43 @@ class Configuration(BaseModel):
             }
         }
     )
+
+    # LLM configuration for comprehension phase
+    comprehension_model: str = Field(
+        default=os.getenv("COMPREHENSION_MODEL", "deepseek-r1"),
+        description="Model name for the comprehension agent"
+    )
+    comprehension_temperature: float = Field(
+        default=float(os.getenv("COMPREHENSION_TEMPERATURE", "0.2")),
+        description="Sampling temperature for the comprehension agent"
+    )
+    comprehension_max_retries: int = Field(
+        default=int(os.getenv("COMPREHENSION_MAX_RETRIES", "2")),
+        description="Max retries for LLM invocation in comprehension agent"
+    )
+
+    # Verification limit
+    verification_max_retries: int = Field(
+        default=int(os.getenv("VERIFICATION_MAX_RETRIES", "2")),
+        description="Max times to retry verification before ending the graph"
+    )
+
+    @classmethod
+    def from_runnable_config(
+        cls, config: Optional[RunnableConfig] = None
+    ) -> "Configuration":
+        """Create a Configuration instance from a RunnableConfig."""
+        configurable = (
+            config["configurable"] if config and "configurable" in config else {}
+        )
+
+        # Get raw values from environment or config
+        raw_values: dict[str, Any] = {
+            name: os.environ.get(name.upper(), configurable.get(name))
+            for name in cls.model_fields.keys()
+        }
+
+        # Filter out None values
+        values = {k: v for k, v in raw_values.items() if v is not None}
+
+        return cls(**values)

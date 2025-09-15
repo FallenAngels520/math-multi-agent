@@ -1,0 +1,7 @@
+langchain-core>=0.2.0
+langgraph>=0.2.0
+pydantic>=2.7.0
+langchain-deepseek>=0.1.0
+sympy>=1.12
+requests>=2.31.0
+typing-extensions>=4.9.0 

@@ -1,0 +1,13 @@
+---
+description: LangGraph/LangChain 架构与节点/边/状态编排约束
+---
+# LangGraph/LangChain 架构规则
+
+- 使用 `StateGraph` 构建主/子图；节点返回 `Command(goto=..., update={...})` 明确路线与更新。
+- 使用 `TypedDict`/`pydantic.BaseModel` 定义结构化输出；禁止在节点间直接耦合调用，数据通过 State 传递。
+- Reducer 策略：`operator.add`（追加）、`override_reducer`（覆盖协议：{"type":"override","value":...}）、`dict_merge_reducer`（浅合并）。
+- 主路径：`START → comprehension → planning → execution → verification → END`；验证失败可回 `planning` 重规划。
+- 并发与退出：工具阶段可并发但需限流；达上限/失败返回结构化降级；定义明确退出条件避免死循环。
+- 观测与日志：在节点产出中附关键决策与迭代计数，便于追踪与回归。
+- 配置与注入：统一从 `src/configuration.py` 读取模型名、预算与并发上限等配置。
+

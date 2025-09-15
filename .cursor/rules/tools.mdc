@@ -1,0 +1,11 @@
+# 工具实现规范
+
+- 基本要求：必须定义 `name`、`description`、`args_schema`；对输入参数做严格校验。
+- 返回格式：统一结构 `{ "success": bool, "result"|"data": any, "error"?: { code, message } }`；便于上层解析。
+- 异常与重试：网络型工具需统一超时；捕获并抛出标准化异常文案；可选指数退避重试。
+- SymPy 工具：解析表达式需控制可用符号；优先返回可打印的 `latex`/简化式；避免不可解析文本。
+- Wolfram Alpha 工具：APP ID 从环境变量读取；请求超时 ≤ 30s；解析 pods 提取 `final_answer` 与 `steps`；异常时返回可诊断信息。
+description:
+globs:
+alwaysApply: false
+---

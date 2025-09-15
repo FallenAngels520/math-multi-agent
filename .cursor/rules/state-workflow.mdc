@@ -1,0 +1,9 @@
+---
+# 状态与工作流约定
+
+- 状态：使用 `MessagesState` + `TypedDict`/`BaseModel`；字段通过 `Annotated[..., reducer]` 绑定 reducer。
+- 覆盖协议：使用 `{"type":"override","value":...}` 进行强覆盖；字典字段使用 `dict_merge_reducer` 做浅合并。
+- 主状态 `MathProblemState` 至少包含：`user_input`, `final_answer`, `solution_steps`, `assumptions`, `expressions`, `sympy_objects`, `proof_steps`, `counter_examples`, `current_agent`, `execution_status`, `error_message`, `total_iterations`。
+- 子状态：`comprehension_result`, `planning_result`, `execution_result`, `verification_result`；通过 `update` 写入，不直接跨节点修改。
+- 消息轨道：为各 agent 分轨记录消息，便于调试与回溯。
+---

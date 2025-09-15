@@ -25,8 +25,35 @@ def planning_agent(state: MathProblemState) -> MathProblemState:
     """
     # TODO: Implement actual planning logic using LLM
     
-    comprehension_data = state.get("comprehension_result", {})
+    comprehension_data = state.get("comprehension_result")
+    if not comprehension_data:
+        # 缺少理解结果，无法规划 → 触发重试
+        return {
+            **state,
+            "current_agent": "planning",
+            "execution_status": ExecutionStatus.NEEDS_RETRY,
+            "error_message": "Planning failed: missing comprehension_result",
+            "planning_messages": [
+                *state.get("planning_messages", []),
+                HumanMessage(content="Planning failed: no comprehension_result available")
+            ]
+        }
+
     problem_type = comprehension_data.get("problem_type", "algebra")
+    if hasattr(problem_type, "value"):
+        problem_type = problem_type.value
+
+    if not isinstance(problem_type, str) or not problem_type:
+        return {
+            **state,
+            "current_agent": "planning",
+            "execution_status": ExecutionStatus.NEEDS_RETRY,
+            "error_message": "Planning failed: invalid problem_type",
+            "planning_messages": [
+                *state.get("planning_messages", []),
+                HumanMessage(content="Planning failed: invalid problem_type")
+            ]
+        }
     
     if problem_type == "algebra":
         planning_result: PlanningState = {

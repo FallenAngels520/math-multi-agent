@@ -23,9 +23,20 @@ def execution_agent(state: MathProblemState) -> MathProblemState:
     Returns:
         Updated state with execution results
     """
-    planning_data = state.get("planning_result", {})
+    planning_data = state.get("planning_result")
+    if not planning_data:
+        return {
+            **state,
+            "current_agent": "execution",
+            "execution_status": ExecutionStatus.NEEDS_RETRY,
+            "error_message": "Execution failed: missing planning_result",
+            "execution_messages": [
+                *state.get("execution_messages", []),
+                HumanMessage(content="Execution failed: no planning_result available")
+            ]
+        }
+
     current_step_index = planning_data.get("current_step_index", 0)
-    
     total_steps = planning_data.get("total_steps", 0)
     if current_step_index >= total_steps:
         # All steps completed
@@ -36,11 +47,35 @@ def execution_agent(state: MathProblemState) -> MathProblemState:
         }
     
     roadmap = planning_data.get("roadmap", [])
-    current_step = roadmap[current_step_index] if current_step_index < len(roadmap) else {"action": "unknown", "description": "Unknown step"}
-    
+    if not isinstance(roadmap, list) or current_step_index < 0 or current_step_index >= len(roadmap):
+        return {
+            **state,
+            "current_agent": "execution",
+            "execution_status": ExecutionStatus.NEEDS_RETRY,
+            "error_message": "Execution failed: invalid roadmap or step index",
+            "execution_messages": [
+                *state.get("execution_messages", []),
+                HumanMessage(content="Execution failed: invalid roadmap or step index")
+            ]
+        }
+
+    current_step = roadmap[current_step_index]
+    action = current_step.get("action") if isinstance(current_step, dict) else None
+    if not action:
+        return {
+            **state,
+            "current_agent": "execution",
+            "execution_status": ExecutionStatus.NEEDS_RETRY,
+            "error_message": "Execution failed: current step missing action",
+            "execution_messages": [
+                *state.get("execution_messages", []),
+                HumanMessage(content="Execution failed: current step missing action")
+            ]
+        }
+
     # TODO: Implement actual execution logic using math tools
     # Mock execution based on step type
-    if current_step["action"] == "isolate_variable":
+    if action == "isolate_variable":
         execution_result: ExecutionState = {
             "current_step": current_step,
             "intermediate_results": [{"step": 1, "result": "2x = 4", "explanation": "Subtracted 3 from both sides: 2x + 3 - 3 = 7 - 3"}],
@@ -53,7 +88,7 @@ def execution_agent(state: MathProblemState) -> MathProblemState:
             ],
             "execution_iterations": state.get("execution_result", {}).get("execution_iterations", 0) + 1
         }
-    elif current_step["action"] == "solve_for_variable":
+    elif action == "solve_for_variable":
         execution_result: ExecutionState = {
             "current_step": current_step,
             "intermediate_results": [{"step": 2, "result": "x = 2", "explanation": "Divided both sides by 2: 2x/2 = 4/2"}],
@@ -92,6 +127,6 @@ def execution_agent(state: MathProblemState) -> MathProblemState:
         "execution_status": ExecutionStatus.COMPLETED,
         "execution_messages": [
             *state.get("execution_messages", []),
-            HumanMessage(content=f"Executed step {current_step_index + 1}: {current_step['action']}")
+            HumanMessage(content=f"Executed step {current_step_index + 1}: {action}")
         ]
     }

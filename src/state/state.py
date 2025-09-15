@@ -160,6 +160,7 @@ class MathProblemState(MessagesState):
     execution_status: ExecutionStatus
     error_message: Optional[str]
     total_iterations: int = 0
+    verification_iterations: int = 0
     
     # Sub-state fields for each agent with proper reducers
     comprehension_result: Optional[ComprehensionState]

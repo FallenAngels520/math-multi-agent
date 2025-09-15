@@ -1,0 +1,41 @@
+---
+alwaysApply: true
+description: 项目总览与导航
+---
+# 数学多智能体项目总览与导航
+
+本规则为全局总览，帮助在代码库中快速定位关键模块与文件。建议从入口脚本开始，沿多智能体工作流逐步深入。
+
+## 入口与运行
+- 入口脚本：[`main.py`](mdc:main.py)
+- 依赖清单：[`requirements.txt`](mdc:requirements.txt)
+- 示例/测试：[`test_wolfram_alpha.py`](mdc:test_wolfram_alpha.py)
+
+## 项目结构与关键文件
+- 智能体实现（Agents）：
+  - 协调管理智能体：[`src/agents/coordinator.py`](mdc:src/agents/coordinator.py)
+  - 题目理解：[`src/agents/comprehension.py`](mdc:src/agents/comprehension.py)
+  - 规划策略：[`src/agents/planning.py`](mdc:src/agents/planning.py)
+  - 计算执行：[`src/agents/execution.py`](mdc:src/agents/execution.py)
+  - 验证反思：[`src/agents/verification.py`](mdc:src/agents/verification.py)
+  - 多智能体装配：[`src/agents/multi_agent.py`](mdc:src/agents/multi_agent.py)
+- 状态与图：
+  - 全局状态与 Reducer：[`src/state/state.py`](mdc:src/state/state.py)
+  - 工具：
+    - SymPy 工具：[`src/tools/sympy.py`](mdc:src/tools/sympy.py)
+    - Wolfram Alpha 工具：[`src/tools/wolfram_alpha.py`](mdc:src/tools/wolfram_alpha.py)
+- 提示词：[`src/prompts/prompt.py`](mdc:src/prompts/prompt.py)
+- 配置：[`src/configuration.py`](mdc:src/configuration.py)
+
+## 多智能体流程（高层）
+- 标准路径：用户输入 → Coordinator → Comprehension → Planning → Execution → Verification → 结束/回退
+- 回退机制：验证失败或执行失败可回到 Planning 重新规划
+- 参考实现：
+  - 调度逻辑参见 [`coordinator_agent`](mdc:src/agents/coordinator.py)
+  - 状态字段、合并策略与消息通道参见 [`MathProblemState`](mdc:src/state/state.py)
+
+## 关键约定
+- 统一使用结构化状态在智能体间传递（TypedDict/BaseModel + Reducer）
+- 工具调用需参数校验与异常处理，并产出标准化结果
+- 新增第三方库时务必同步更新依赖清单（详见依赖与质量规则）
+
