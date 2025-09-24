@@ -38,6 +38,113 @@ class PlanSolutionStrategy(BaseModel):
         description="Number of steps required to solve the problem.",
     )
 
+class ComprehensionAnalysis(BaseModel):
+    """Structured output model for comprehension agent analysis based on prompt template."""
+    
+    # 第一阶段：问题表象解构
+    givens: List[str] = Field(
+        description="已知信息 (Givens): 结构化地列出所有明确给出的条件、数据、定义和关系",
+        default_factory=list
+    )
+    objectives: List[str] = Field(
+        description="求解目标 (Objectives): 准确无误地阐述问题最终要求解或证明什么",
+        default_factory=list
+    )
+    explicit_constraints: List[str] = Field(
+        description="显性约束 (Explicit Constraints): 识别所有对变量或解的明确限制",
+        default_factory=list
+    )
+    
+    # 第二阶段：核心原理溯源
+    primary_field: str = Field(
+        description="核心领域 (Primary Field): 问题所属的主要数学分支",
+        default=""
+    )
+    fundamental_principles: List[Dict[str, Any]] = Field(
+        description="基础原理与工具 (Principles & Tools): 识别驱动该问题的根本数学思想或原理",
+        default_factory=list
+    )
+    
+    # 第三阶段：策略路径构建
+    strategy_deduction: str = Field(
+        description="从原理到策略的推演 (Deduction from Principles to Strategy): 详细阐述如何从基础原理构建解题思路",
+        default=""
+    )
+    key_breakthroughs: List[str] = Field(
+        description="关键转化与突破口 (Key Transformations & Breakthroughs): 解决此问题的关键步骤或思维转化点",
+        default_factory=list
+    )
+    potential_risks: List[str] = Field(
+        description="潜在风险与验证点 (Potential Risks & Verification Points): 逻辑陷阱、计算易错点或需要验证的环节",
+        default_factory=list
+    )
+    
+    # 元数据
+    problem_type: str = Field(
+        description="The primary mathematical field of the problem (algebra, geometry, calculus, etc.)",
+        default=""
+    )
+    
+    class Config:
+        json_schema_extra = {
+            "examples": [
+                {
+                    "description": "代数方程问题示例",
+                    "givens": ["方程 x^2 - 5x + 6 = 0"],
+                    "objectives": ["求解方程的所有实数根"],
+                    "explicit_constraints": ["x ∈ ℝ"],
+                    "primary_field": "代数",
+                    "fundamental_principles": [
+                        {
+                            "principle": "方程求解思想",
+                            "related_tools": ["因式分解法", "求根公式", "韦达定理"],
+                            "principle_manifestation": "将方程转化为可解的形式"
+                        }
+                    ],
+                    "strategy_deduction": "本题的核心是方程求解思想。最基础的方法是尝试因式分解，将二次方程分解为两个一次因式的乘积。如果因式分解困难，则使用求根公式直接计算。",
+                    "key_breakthroughs": ["识别出方程可因式分解为 (x-2)(x-3)=0"],
+                    "potential_risks": ["需要验证解是否满足原方程", "检查判别式非负性"],
+                    "problem_type": "algebra"
+                },
+                {
+                    "description": "几何问题示例", 
+                    "givens": ["直角三角形 ABC，∠C=90°", "AC=3, BC=4"],
+                    "objectives": ["求斜边 AB 的长度"],
+                    "explicit_constraints": ["三角形为直角三角形"],
+                    "primary_field": "几何",
+                    "fundamental_principles": [
+                        {
+                            "principle": "勾股定理",
+                            "related_tools": ["毕达哥拉斯定理"],
+                            "principle_manifestation": "直角三角形两直角边平方和等于斜边平方"
+                        }
+                    ],
+                    "strategy_deduction": "本题的核心是勾股定理的应用。直接应用定理公式 AB² = AC² + BC² 计算斜边长度。",
+                    "key_breakthroughs": ["识别出这是标准的勾股定理应用场景"],
+                    "potential_risks": ["需要确保三角形确实是直角三角形", "单位一致性检查"],
+                    "problem_type": "geometry"
+                },
+                {
+                    "description": "概率问题示例",
+                    "givens": ["一副标准扑克牌（52张）", "随机抽取一张牌"],
+                    "objectives": ["求抽到红心的概率"],
+                    "explicit_constraints": ["等概率随机抽取"],
+                    "primary_field": "概率",
+                    "fundamental_principles": [
+                        {
+                            "principle": "古典概型",
+                            "related_tools": ["概率公式 P(A)=m/n"],
+                            "principle_manifestation": "每个基本事件等可能发生"
+                        }
+                    ],
+                    "strategy_deduction": "本题的核心是古典概型思想。需要计算有利事件数（红心牌数13）与总事件数（总牌数52）的比值。",
+                    "key_breakthroughs": ["识别出这是标准的古典概型问题"],
+                    "potential_risks": ["需要确认牌是否完整且洗匀", "概率值应在0到1之间"],
+                    "problem_type": "probability"
+                }
+            ]
+        }
+
 
 ###################
 # State Definitions
@@ -92,7 +199,23 @@ class MathInputState(MessagesState):
 
 
 class ComprehensionState(TypedDict):
-    """State structure for comprehension agent results."""
+    """State structure for comprehension agent results aligned with prompt template."""
+    
+    # 第一阶段：问题表象解构
+    givens: Annotated[List[str], override_reducer]
+    objectives: Annotated[List[str], override_reducer]
+    explicit_constraints: Annotated[List[str], override_reducer]
+    
+    # 第二阶段：核心原理溯源
+    primary_field: str
+    fundamental_principles: Annotated[List[Dict[str, Any]], override_reducer]
+    
+    # 第三阶段：策略路径构建
+    strategy_deduction: str
+    key_breakthroughs: Annotated[List[str], override_reducer]
+    potential_risks: Annotated[List[str], override_reducer]
+    
+    # 元数据和兼容字段
     problem_type: ProblemType
     known_conditions: Annotated[Dict[str, Any], dict_merge_reducer]
     unknown_variables: Annotated[List[str], override_reducer]
