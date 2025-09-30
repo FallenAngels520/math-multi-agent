@@ -85,6 +85,19 @@ class VerificationVerdict(str, Enum):
 # Structured Output Models (基于提示词模板)
 ###################
 
+class ClarifyWithUser(BaseModel):
+    """Model for user clarification requests."""
+    
+    need_clarification: bool = Field(
+        description="Whether the user needs to be asked a clarifying question.",
+    )
+    question: str = Field(
+        description="A question to ask the user to clarify the report scope",
+    )
+    verification: str = Field(
+        description="Verify message that we will start research after the user has provided the necessary information.",
+    )
+
 class LaTeXNormalization(BaseModel):
     """LaTeX标准化预处理结果"""
     original_text: str = Field(description="原始问题文本")
@@ -320,13 +333,6 @@ class MathProblemStateV2(MessagesState):
     sympy_objects: Annotated[Dict[str, Any], dict_merge_reducer]
     proof_steps: Annotated[List[str], list_append_reducer]
     counter_examples: Annotated[List[str], list_append_reducer]
-    
-    # Agent子状态（基于提示词模板）
-    comprehension_state: Optional[ComprehensionState]
-    planning_state: Optional[PlanningState]
-    execution_state: Optional[ExecutionState]
-    verification_state: Optional[VerificationState]
-    coordinator_state: Optional[CoordinatorState]
     
     # 全局控制字段
     is_completed: bool
